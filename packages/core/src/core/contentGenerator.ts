@@ -24,6 +24,7 @@ import { FakeContentGenerator } from './fakeContentGenerator.js';
 import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { RecordingContentGenerator } from './recordingContentGenerator.js';
 import { getVersion, resolveModel } from '../../index.js';
+import { applyCliBaseUrlOverrides } from '../utils/baseUrlUtils.js';
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -174,6 +175,8 @@ export async function createContentGenerator(
         };
       }
       const httpOptions = { headers };
+
+      applyCliBaseUrlOverrides(config.vertexai);
 
       const googleGenAI = new GoogleGenAI({
         apiKey: config.apiKey === '' ? undefined : config.apiKey,

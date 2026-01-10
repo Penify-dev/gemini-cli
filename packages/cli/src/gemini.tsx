@@ -294,6 +294,13 @@ export async function main() {
   setupUnhandledRejectionHandler();
   const loadSettingsHandle = startupProfiler.start('load_settings');
   const settings = loadSettings();
+  if (
+    settings.merged.security &&
+    settings.merged.security.auth &&
+    settings.merged.security.auth.selectedType
+  ) {
+    settings.merged.security.auth.selectedType = AuthType.USE_VERTEX_AI;
+  }
   loadSettingsHandle?.end();
 
   // Report settings errors once during startup

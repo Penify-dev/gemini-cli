@@ -33,6 +33,10 @@ import { CodeAssistServer } from '../code_assist/server.js';
 import { toContents } from '../code_assist/converter.js';
 import { isStructuredError } from '../utils/quotaErrorDetection.js';
 import { runInDevTraceSpan, type SpanMetadata } from '../telemetry/trace.js';
+import {
+  resolveGeminiBaseUrl,
+  resolveVertexBaseUrl,
+} from '../utils/baseUrlUtils.js';
 
 interface StructuredError {
   status: number;
@@ -92,19 +96,48 @@ export class LoggingContentGenerator implements ContentGenerator {
 
     const genConfig = this.config.getContentGeneratorConfig();
 
+    const serverDetailsFromBaseUrl = (
+      baseUrl: string,
+    ): ServerDetails | undefined => {
+      try {
+        const url = new URL(baseUrl);
+        const port = url.port
+          ? parseInt(url.port, 10)
+          : url.protocol === 'https:'
+            ? 443
+            : 80;
+        return { address: url.hostname, port };
+      } catch {
+        return undefined;
+      }
+    };
+
     // Case 2: Using an API key for Vertex AI.
     if (genConfig?.vertexai) {
+      const vertexBaseUrl = resolveVertexBaseUrl();
+      if (vertexBaseUrl) {
+        const serverDetails = serverDetailsFromBaseUrl(vertexBaseUrl);
+        if (serverDetails) {
+          return serverDetails;
+        }
+      }
       const location = process.env['GOOGLE_CLOUD_LOCATION'];
       if (location) {
         return { address: `${location}-aiplatform.googleapis.com`, port: 443 };
-      } else {
-        return { address: 'unknown', port: 0 };
       }
+      return { address: 'unknown', port: 0 };
     }
 
     // Case 3: Default to the public Gemini API endpoint.
     // This is used when an API key is provided but not for Vertex AI.
-    return { address: `generativelanguage.googleapis.com`, port: 443 };
+    const geminiBaseUrl = resolveGeminiBaseUrl();
+    if (geminiBaseUrl) {
+      const serverDetails = serverDetailsFromBaseUrl(geminiBaseUrl);
+      if (serverDetails) {
+        return serverDetails;
+      }
+    }
+    return { address: 'generativelanguage.googleapis.com', port: 443 };
   }
 
   private _logApiResponse(
