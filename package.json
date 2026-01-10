@@ -1,5 +1,5 @@
 {
-  "name": "@google/gemini-cli",
+  "name": "@anek-codes/gemini-cli",
   "version": "0.25.0-nightly.20260107.59a18e710",
   "engines": {
     "node": ">=20.0.0"
