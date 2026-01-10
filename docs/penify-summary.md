@@ -88,3 +88,11 @@ To use Gemini API:
 1. Set environment variable: export GEMINI_API_KEY="your-key" export
    GEMINI_DEFAULT_AUTH_TYPE="gemini-api-key"
 2. Select "Use Gemini API Key" in the dialog
+
+### Troubleshoot
+
+//this piece of code is not reququired in `packages/cli/src/gemini.tsx` // I
+disabled authType in `~/.gemini/settings.json` and the env helped in fixing if (
+settings.merged.security && settings.merged.security.auth &&
+settings.merged.security.auth.selectedType ) {
+settings.merged.security.auth.selectedType = AuthType.USE_VERTEX_AI; }
